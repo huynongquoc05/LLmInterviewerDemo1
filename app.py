@@ -9,10 +9,14 @@ import threading
 import time
 from datetime import datetime, timedelta
 
-# Kết nối MongoDB
-client = MongoClient("mongodb://localhost:27017/")
+import os
+from pymongo import MongoClient
+
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+client = MongoClient(MONGO_URI)
 db = client["interviewer_ai"]
 collection = db["interview_results"]
+
 
 # Khởi tạo Flask + Interviewer
 app = Flask(__name__)
@@ -265,7 +269,7 @@ if __name__ == "__main__":
     print("🔊 Text-to-Speech đã được kích hoạt")
     print("📁 Audio files được lưu tại:", AUDIO_FOLDER)
 
-    app.run(debug=True, threaded=True)
+    #app.run(debug=True, threaded=True)
     #Xóa file tạm khi kết thúc
     cleanup_temp_files()
 
