@@ -1,0 +1,22 @@
+{
+  "candidate_info": {
+    "name": "Bùi Văn Hải,QTKD2,Marketing",
+    "profile": "Họ tên: Bùi Văn Hải, Lớp: QTKD2, Chuyên ngành: Marketing, Điểm chuyên cần: 6.0, Điểm 40%: 4.8, ",
+    "classified_level": "yeu"
+  },
+  "interview_stats": {
+    "total_questions": 1,
+    "final_score": 8.0,
+    "topic": "Đặt tên trong Java"
+  },
+  "question_history": [
+    {
+      "question_number": 1,
+      "difficulty": "very_easy",
+      "question": "Theo tài liệu tham khảo, hãy nêu các quy tắc cơ bản khi đặt tên (định danh) trong Java.",
+      "answer": "Xin chào giám khảo, mình xin đưa ra 3 quy tắc đặt tên cơ bản của java như sau : Thứ nhất, không được đặt tên là các từ khóa có sẵn;  Thứ 2 là Chỉ được phép sử dụng các chữ cái, chữ số, dấu $ và dấu _ khi đặt tên;  Thứ 3 là không được bắt đầu bằng 1 số. Ví dụ, tên hợp lệ là fullName, 1 tên không hợp lệ là private (trùng từ khóa) hoặc 1stRunnerUp( bắt đầu bằng số)",
+      "score": 8.0,
+      "analysis": "Câu trả lời rất chính xác, rõ ràng và có ví dụ minh họa tốt cho 3 quy tắc cơ bản được nêu ra. Thí sinh đã nắm vững các quy tắc về từ khóa, ký tự cho phép và không bắt đầu bằng số. Tuy nhiên, câu trả lời còn thiếu một quy tắc quan trọng khác theo tài liệu là không được đặt tên có chứa khoảng trống (ví dụ: 'Hello World' không hợp lệ). Thí sinh cũng đã khéo léo tránh nhầm lẫn giữa 'quy tắc' và 'quy ước' đặt tên."
+    }
+  ]
+}

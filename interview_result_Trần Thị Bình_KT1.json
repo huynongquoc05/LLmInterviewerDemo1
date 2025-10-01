@@ -1,0 +1,22 @@
+{
+  "candidate_info": {
+    "name": "Trần Thị Bình,KT1",
+    "profile": "Họ tên: Trần Thị Bình, Lớp: KT1, Chuyên ngành: Kế toán, Điểm chuyên cần: 7.0, Điểm 40%: 5.3, ",
+    "classified_level": "trung_binh"
+  },
+  "interview_stats": {
+    "total_questions": 1,
+    "final_score": 10.0,
+    "topic": "Đặt tên trong Java"
+  },
+  "question_history": [
+    {
+      "question_number": 1,
+      "difficulty": "easy",
+      "question": "Dựa trên các quy tắc đặt tên trong Java, hãy xác định tên nào trong danh sách sau đây là HỢP LỆ và tên nào là KHÔNG HỢP LỆ, và giải thích ngắn gọn lý do cho mỗi trường hợp: `public`, `_count`, `1stValue`, `$amount`.",
+      "answer": "Dựa trên các quy tắc đặt tên trong Java, phân tích các định danh như sau: `public` là KHÔNG HỢP LỆ vì đây là từ khóa của Java, không được dùng làm định danh. `_count` là HỢP LỆ vì bắt đầu bằng dấu gạch dưới và chỉ chứa ký tự cho phép, dù không khuyến khích theo quy ước. `1stValue` là KHÔNG HỢP LỆ vì bắt đầu bằng số, vi phạm quy tắc định danh phải bắt đầu bằng chữ cái, `_`, hoặc `$`. `$amount` là HỢP LỆ vì bắt đầu bằng `$` và chỉ chứa ký tự cho phép, nhưng nên tránh dùng `$` theo quy ước để mã dễ đọc.",
+      "score": 10.0,
+      "analysis": "Câu trả lời rất chính xác, đầy đủ và rõ ràng. Người trả lời đã xác định đúng tính hợp lệ của từng định danh và đưa ra lý do chính xác dựa trên các quy tắc đặt tên của Java được cung cấp. Đặc biệt, việc bổ sung các lưu ý về quy ước đặt tên (như không khuyến khích dùng `_` hoặc `$` ở đầu định danh) cho `_count` và `$amount` cho thấy sự hiểu biết sâu sắc hơn về thực tiễn lập trình Java, không chỉ dừng lại ở các quy tắc bắt buộc. Cách trình bày mạch lạc, dễ hiểu cho từng trường hợp."
+    }
+  ]
+}

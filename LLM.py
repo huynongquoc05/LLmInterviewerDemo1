@@ -14,8 +14,8 @@ API_KEY=loadapi()
 embeddings = HuggingFaceEmbeddings(model_name="intfloat/multilingual-e5-large-instruct")
 
 # Load FAISS database đã lưu
-db = FAISS.load_local("vector_db2", embeddings, allow_dangerous_deserialization=True)
-
+db = FAISS.load_local("vector_db2chunk_nltk", embeddings, allow_dangerous_deserialization=True)
+print(db)
 # Tạo retriever từ FAISS
 retriever = db.as_retriever(search_kwargs={"k": 5})
 
@@ -72,5 +72,6 @@ while True:
 
     result = qa_chain.invoke({"question": query})
     print("🤖 Bot:", result["answer"])
+
 
 

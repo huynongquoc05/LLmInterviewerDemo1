@@ -1,12 +1,20 @@
-from langchain_community.document_loaders import PyPDFLoader
+
+
+
+from langchain_community.document_loaders import PyPDFLoader, PDFPlumberLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 import os
+from langchain.schema import Document
 
 # Load PDF
 loader = PyPDFLoader("Chương 2 Biến, hằng và kiểu dữ liệu.pdf")
-documents = loader.load()
+pages = loader.load()
+
+# Gộp toàn bộ text thành 1 Document duy nhất
+full_text = "\n".join([p.page_content for p in pages])
+full_doc = [Document(page_content=full_text)]
 
 # Split text
 text_splitter = RecursiveCharacterTextSplitter(
@@ -14,7 +22,7 @@ text_splitter = RecursiveCharacterTextSplitter(
     chunk_overlap=200,
     length_function=len,
 )
-docs = text_splitter.split_documents(documents)
+docs = text_splitter.split_documents(full_doc)
 
 # # Embedding
 # embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
@@ -53,6 +61,6 @@ embeddings = HuggingFaceEmbeddings(model_name=model_name)
 db = FAISS.from_documents(docs, embeddings)
 
 # Save to disk (create folder if not exists)
-save_path = "vector_db2"
+save_path = "vector_db2b"
 os.makedirs(save_path, exist_ok=True)
 db.save_local(save_path)
