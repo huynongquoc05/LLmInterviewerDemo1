@@ -12,3 +12,6 @@ pypdf
 pdfplumber
 
 sentence-transformers
+gunicorn
+
+
