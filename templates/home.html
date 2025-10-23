@@ -11,10 +11,10 @@
     <p class="lead text-muted">Chọn chức năng bạn muốn bắt đầu:</p>
 
     <div class="d-flex justify-content-center gap-4 mt-4">
-        <a href="/embedding" class="btn btn-primary btn-lg">
+        <a href="{{ url_for('embedding_page') }}" class="btn btn-primary btn-lg">
             🧠 Tạo Vectorstore (Kiến thức)
         </a>
-        <a href="/interview_session" class="btn btn-success btn-lg">
+        <a href="{{ url_for('interview_session_page') }}" class="btn btn-success btn-lg">
             👥 Tạo Phiên Phỏng vấn
         </a>
     </div>

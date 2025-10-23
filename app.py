@@ -68,11 +68,17 @@ client = MongoClient("mongodb://localhost:27017/")
 db = client["interviewer_ai"]
 collection = db["interview_results"]
 
-# Khởi tạo Flask + Interviewer
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/iview1/static', static_folder='static')
+
+# Tất cả đường dẫn sẽ tự có prefix /iview1
+app.config['APPLICATION_ROOT'] = '/iview1'
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
+
+# @app.context_processor
+# def inject_base():
+#     return dict(base_path=request.script_root or '/iview1')
 
 # Thư mục lưu trữ audio tạm thời
 AUDIO_FOLDER = "temp_audio"
@@ -134,42 +140,65 @@ def remove_code_blocks(text: str) -> str:
 
     return clean_text.strip()
 
+
+
+
 def create_audio_from_text(text, lang='vi'):
     """
-    Tạo file audio từ text bằng gTTS
+    Tạo file audio từ text.
+    Ưu tiên dùng ElevenLabs (tự nhiên hơn), fallback sang gTTS nếu lỗi hoặc hết hạn mức.
 
     Args:
         text (str): Văn bản cần chuyển thành giọng nói
         lang (str): Ngôn ngữ ('vi' cho tiếng Việt, 'en' cho tiếng Anh)
 
     Returns:
-        str: Tên file audio được tạo
+        str | None: ID của audio (uuid) nếu thành công, None nếu thất bại
     """
+    from extension import generate_voice_ElevenLab  # Hàm tiện ích bạn đã có
     try:
+        # Làm sạch text
+        clean_text = remove_code_blocks(text) if 'remove_code_blocks' in globals() else text
+        clean_text = clean_text.replace("🤖", "").strip()
+        if not clean_text:
+            print("⚠️ Text trống, bỏ qua tạo audio.")
+            return None
+
         # Tạo tên file unique
         audio_id = str(uuid.uuid4())
         audio_filename = f"question_{audio_id}.mp3"
         audio_path = os.path.join(AUDIO_FOLDER, audio_filename)
 
-        # Xử lý text để tối ưu cho TTS
-        # Loại bỏ các ký tự đặc biệt có thể gây lỗi
-        # Làm sạch text
-        clean_text = remove_code_blocks(text)
-        clean_text = clean_text.replace("🤖", "").strip()
+        # ===== ƯU TIÊN ELEVENLABS =====
+        print("🧠 Đang tạo voice bằng ElevenLabs...")
+        eleven_audio_path = generate_voice_ElevenLab(clean_text, output_path=audio_path)
 
-        # Tạo audio bằng gTTS
+        if eleven_audio_path:
+            # Lưu cache
+            audio_cache[audio_id] = {
+                'filename': audio_filename,
+                'path': eleven_audio_path,
+                'created_at': datetime.now(),
+                'text': clean_text,
+                'source': 'elevenlabs'
+            }
+            print(f"✅ Đã tạo audio bằng ElevenLabs: {audio_filename}")
+            return audio_id
+
+        # ===== FALLBACK: GOOGLE TTS =====
+        print("⚠️ ElevenLabs lỗi hoặc hết hạn mức, fallback sang Google TTS...")
         tts = gTTS(text=clean_text, lang=lang, slow=False)
         tts.save(audio_path)
 
-        # Lưu thông tin vào cache
         audio_cache[audio_id] = {
             'filename': audio_filename,
             'path': audio_path,
             'created_at': datetime.now(),
-            'text': clean_text
+            'text': clean_text,
+            'source': 'gtts'
         }
 
-        print(f"✅ Đã tạo audio: {audio_filename}")
+        print(f"✅ Đã tạo audio bằng Google TTS: {audio_filename}")
         return audio_id
 
     except Exception as e:

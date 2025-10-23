@@ -70,3 +70,46 @@ def build_cv_vectorstore_from_candidates(candidates, base_dir="vectorstores/cv")
 
     print(f"✅ CV Vectorstore saved to {save_path}")
     return save_path
+
+
+import requests
+import os
+from GetApikey import get_api_key_elevenlab
+
+
+# extension.py
+from GetApikey import get_api_key_elevenlab
+import requests
+
+def generate_voice_ElevenLab(text, output_path="output.mp3"):
+    """
+    Sinh voice từ text bằng ElevenLabs.
+    Trả về đường dẫn file nếu thành công, None nếu lỗi (vd hết limit).
+    """
+    API_KEY = get_api_key_elevenlab()
+    if not API_KEY:
+        return None
+
+    url = "https://api.elevenlabs.io/v1/text-to-speech/TX3LPaxmHKxFdv7VOQHJ"
+    headers = {"xi-api-key": API_KEY, "Content-Type": "application/json"}
+    data = {
+        "text": text,
+        "model_id": "eleven_v3",
+        "voice_settings": {"stability": 0.5, "similarity_boost": 0.75}
+    }
+
+    try:
+        res = requests.post(url, json=data, headers=headers)
+        if res.status_code == 200:
+            with open(output_path, "wb") as f:
+                f.write(res.content)
+            return output_path
+        elif res.status_code == 429:
+            print("⚠️ Hết limit ElevenLabs.")
+            return None
+        else:
+            print(f"⚠️ Lỗi ElevenLabs: {res.status_code}")
+            return None
+    except Exception as e:
+        print(f"⚠️ Lỗi gửi request ElevenLabs: {e}")
+        return None

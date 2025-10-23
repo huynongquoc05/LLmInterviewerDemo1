@@ -48,6 +48,7 @@
             outline: []
         };
         let existingSessions = [];
+        const response = await fetch(`${basePath}/interviewing/vectorstores`);
 
         // Step navigation
         function goToStep(step) {
@@ -243,7 +244,7 @@
         // Step 3: Knowledge Base
         async function loadVectorstores() {
             try {
-                const response = await fetch('/interviewing/vectorstores');
+                const response = await fetch(`${basePath}/interviewing/vectorstores`);
                 const data = await response.json();
 
                 const select = document.getElementById('vectorstoreSelect');
@@ -352,7 +353,7 @@
             showLoading(true, 'Đang tạo buổi phỏng vấn...');
 
             try {
-                const response = await fetch('/interview_session/create', {
+                const response = await fetch(`${basePath}/interview_session/create`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -371,7 +372,7 @@
 
                 if (result.success) {
                     alert('✅ Tạo buổi phỏng vấn thành công!');
-                    window.location.href = '/interview_session';
+                    window.location.href = '${basePath}/interview_session';
                 } else {
                     alert('❌ Lỗi: ' + result.error);
                 }
@@ -386,7 +387,7 @@
         // Load existing sessions
         async function loadExistingSessions() {
             try {
-                const response = await fetch('/interview_session/list');
+                const response = await fetch('${basePath}/interview_session/list');
                 const data = await response.json();
 
                 if (data.success) {
@@ -433,9 +434,13 @@
             `).join('');
         }
 
-        function selectSession(sessionId) {
-            window.location.href = `/interview_session/detail/${sessionId}`;
-        }
+        const basePath = "{{ base_path }}";
+    function selectSession(sessionId) {
+    const basePath = window.location.pathname.startsWith('/iview1')
+        ? '/iview1'
+        : '';
+    window.location.href = `${basePath}/interview_session/detail/${sessionId}`;
+}
 
         // Utilities
         function showLoading(show, message = 'Đang xử lý...') {
@@ -482,7 +487,7 @@
                     <span>Quản lý buổi phỏng vấn</span>
                 </div>
                 <div class="header-actions">
-                    <a href="/" class="btn btn-secondary btn-sm">
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary btn-sm">
                         <i class="fas fa-home"></i> Trang chủ
                     </a>
                 </div>

@@ -40,12 +40,14 @@
         let currentQuestion = "";
         let currentAudio = null;
         let autoPlayEnabled = true;
+        const basePath = window.location.pathname.startsWith('/iview1') ? '/iview1' : '';
 
         async function loadSessionDetail() {
             try {
                 showLoading(true, 'Đang tải thông tin...');
 
-                const response = await fetch(`/interview_session/get/${SESSION_ID}`);
+                const response = await fetch(`${basePath}/interview_session/get/${SESSION_ID}`);
+
                 const data = await response.json();
 
                 if (data.success) {
@@ -137,7 +139,8 @@
 
             try {
                 // Update status to in_progress
-                await fetch('/interview_session/update_candidate_status', {
+                await fetch(`${basePath}/interview_session/update_candidate_status`, {
+
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -148,7 +151,8 @@
                 });
 
                 // Start interview
-                const response = await fetch('/interview_session/start_candidate', {
+                const response = await fetch(`${basePath}/interview_session/start_candidate`, {
+
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -206,7 +210,8 @@
             try {
                 const fullName = `${currentCandidate.name},${currentCandidate.class}`;
 
-                const response = await fetch('/interviewing/answer', {
+                const response = await fetch(`${basePath}/interviewing/answer`, {
+
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -230,7 +235,8 @@
                     document.getElementById('finishBtn').style.display = 'inline-block';
 
                     // Update status to completed
-                    await fetch('/interview_session/update_candidate_status', {
+                    await fetch(`${basePath}/interview_session/update_candidate_status`, {
+
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
@@ -465,14 +471,16 @@
         }
 
         async function exportResults() {
-            window.location.href = `/interview_session/export/${SESSION_ID}`;
+            window.location.href = `${basePath}/interview_session/export/${SESSION_ID}`;
+
         }
 
         async function deleteSession() {
             if (!confirm('Bạn có chắc muốn xóa buổi phỏng vấn này?')) return;
 
             try {
-                const response = await fetch(`/interview_session/delete/${SESSION_ID}`, {
+                const response = await fetch(`${basePath}/interview_session/delete/${SESSION_ID}`, {
+
                     method: 'DELETE'
                 });
 
