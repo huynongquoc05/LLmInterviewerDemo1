@@ -57,6 +57,13 @@ MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
+# Thư mục lưu trữ audio tạm thời
+AUDIO_FOLDER = "temp_audio"
+if not os.path.exists(AUDIO_FOLDER):
+    os.makedirs(AUDIO_FOLDER)
+
+# Dictionary để lưu trữ thông tin audio files
+audio_cache = {}
 
 
 def allowed_file(filename):
@@ -70,24 +77,28 @@ collection = db["interview_results"]
 
 app = Flask(__name__, static_url_path='/iview1/static', static_folder='static')
 
-# Tất cả đường dẫn sẽ tự có prefix /iview1
-app.config['APPLICATION_ROOT'] = '/iview1'
-
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
 
-# @app.context_processor
-# def inject_base():
-#     return dict(base_path=request.script_root or '/iview1')
+# 🧠 Hàm xác định base_path tự động (khi render template)
+@app.context_processor
+def inject_base_path():
+    """
+    Nếu đang chạy trên domain ánh xạ fit.neu.edu.vn thì thêm prefix /iview1,
+    ngược lại (chạy bằng IP hoặc localhost) thì để trống.
+    """
+    if 'fit.neu.edu.vn' in request.host:
+        base_path = '/iview1'
+    else:
+        base_path = ''
+    return dict(base_path=base_path)
 
-# Thư mục lưu trữ audio tạm thời
-AUDIO_FOLDER = "temp_audio"
-if not os.path.exists(AUDIO_FOLDER):
-    os.makedirs(AUDIO_FOLDER)
-
-# Dictionary để lưu trữ thông tin audio files
-audio_cache = {}
-
+@app.route("/")
+def index():
+    """Trang chủ - có thể tạo landing page""" #
+    #Cleanup old audio files
+    clean_old_audio_files()
+    return render_template("home.html") # Tạo trang chủ riêng nếu cần
 
 def clean_old_audio_files():
     """Xóa các file audio cũ hơn 1 giờ"""
@@ -220,12 +231,7 @@ def detect_language(text):
         return 'en'
 
 
-@app.route("/")
-def index():
-    """Trang chủ - có thể tạo landing page"""
-    # Cleanup old audio files
-    clean_old_audio_files()
-    return render_template("home.html")  # Tạo trang chủ riêng nếu cần
+
 
 @app.route("/interviewing")
 def interviewing():
