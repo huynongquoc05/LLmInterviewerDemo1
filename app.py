@@ -100,6 +100,18 @@ def index():
     clean_old_audio_files()
     return render_template("home.html") # Tạo trang chủ riêng nếu cần
 
+
+
+def get_base_path():
+    """
+    Tự động trả về prefix phù hợp:
+    - Trống khi chạy local/IP (http://101.96.66.223:8005)
+    - '/iview1' khi chạy trên fit.neu.edu.vn
+    """
+    if 'fit.neu.edu.vn' in request.host:
+        return '/iview1'
+    return ''
+
 def clean_old_audio_files():
     """Xóa các file audio cũ hơn 1 giờ"""
     try:
@@ -288,7 +300,8 @@ def answer():
             audio_id = create_audio_from_text(question_text, lang)
             if audio_id:
                 result["audio_id"] = audio_id
-                result["audio_url"] = f"/audio/{audio_id}"
+                result["audio_url"] = f"{get_base_path()}/audio/{audio_id}"
+
 
     # Lưu kết quả vào MongoDB nếu phỏng vấn kết thúc
     if result.get("finished"):
@@ -352,7 +365,8 @@ def test_tts():
         return jsonify({
             "success": True,
             "audio_id": audio_id,
-            "audio_url": f"/audio/{audio_id}",
+            "audio_url": f"{get_base_path()}/audio/{audio_id}"
+,
             "text": text,
             "language": lang
         })
@@ -821,7 +835,8 @@ def start_candidate_interview():
         result.update({
             "success": True,
             "audio_id": audio_id,
-            "audio_url": f"/audio/{audio_id}" if audio_id else None,
+            "audio_url": f"{get_base_path()}/audio/{audio_id}"
+ if audio_id else None,
             "phase": result.get("phase", "warmup")  # 👈 Thêm dòng này
         })
 

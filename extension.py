@@ -90,12 +90,12 @@ def generate_voice_ElevenLab(text, output_path="output.mp3"):
     if not API_KEY:
         return None
 
-    url = "https://api.elevenlabs.io/v1/text-to-speech/TX3LPaxmHKxFdv7VOQHJ"
+    url = "https://api.elevenlabs.io/v1/text-to-speech/pqHfZKP75CvOlQylNhV4"
     headers = {"xi-api-key": API_KEY, "Content-Type": "application/json"}
     data = {
         "text": text,
-        "model_id": "eleven_v3",
-        "voice_settings": {"stability": 0.5, "similarity_boost": 0.75}
+        "model_id": "eleven_turbo_v2_5",
+        "voice_settings": {"stability": 0.8, "similarity_boost": 0.8}
     }
 
     try:
