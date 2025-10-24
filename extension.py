@@ -95,7 +95,11 @@ def generate_voice_ElevenLab(text, output_path="output.mp3"):
     data = {
         "text": text,
         "model_id": "eleven_turbo_v2_5",
-        "voice_settings": {"stability": 0.8, "similarity_boost": 0.8}
+        "voice_settings": {
+            "stability": 0.8,
+            "similarity_boost": 0.8
+        },
+        "voice_speed": 1.1
     }
 
     try:
