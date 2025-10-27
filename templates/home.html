@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Trang chủ - AI Interviewer</title>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body class="bg-light text-center py-5">
@@ -11,10 +12,11 @@
     <p class="lead text-muted">Chọn chức năng bạn muốn bắt đầu:</p>
 
     <div class="d-flex justify-content-center gap-4 mt-4">
-        <a href="/embedding" class="btn btn-primary btn-lg">
+        <!-- Dùng base_path để thích ứng cả hai môi trường -->
+        <a href="{{ base_path }}{{ url_for('embedding_page') }}" class="btn btn-primary btn-lg">
             🧠 Tạo Vectorstore (Kiến thức)
         </a>
-        <a href="/interview_session" class="btn btn-success btn-lg">
+        <a href="{{ base_path }}{{ url_for('interview_session_page') }}" class="btn btn-success btn-lg">
             👥 Tạo Phiên Phỏng vấn
         </a>
     </div>

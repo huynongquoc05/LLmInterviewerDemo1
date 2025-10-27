@@ -487,6 +487,7 @@ YÊU CẦU:
 - Nếu thí sinh giỏi, đẩy khó hơn một chút
 - Tham khảo lịch sử để tránh lặp lại câu hỏi tương tự
 - Nếu thí sinh trả lời tốt câu trước, dành 1 lời khen trước câu hỏi mới.
+- Dung lượng hợp lý, không quá dài vì thời gian phỏng vấn có hạn:
 
 OUTPUT: JSON
 {{"question": " lời khen (nếu có) + câu hỏi cá nhân hóa..."}}

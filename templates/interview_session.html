@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý buổi phỏng vấn</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ base_path }}{{ url_for('static', filename='styles.css') }}">
+    <!-- File CSS dành riêng cho trang này -->
+    <link rel="stylesheet" href="{{ base_path }}{{ url_for('static', filename='session_wizard.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -48,6 +50,8 @@
             outline: []
         };
         let existingSessions = [];
+        const basePath = window.location.pathname.startsWith('/iview1') ? '/iview1' : '';
+
 
         // Step navigation
         function goToStep(step) {
@@ -243,7 +247,7 @@
         // Step 3: Knowledge Base
         async function loadVectorstores() {
             try {
-                const response = await fetch('/interviewing/vectorstores');
+                const response = await fetch(`${basePath}/interviewing/vectorstores`)
                 const data = await response.json();
 
                 const select = document.getElementById('vectorstoreSelect');
@@ -352,7 +356,7 @@
             showLoading(true, 'Đang tạo buổi phỏng vấn...');
 
             try {
-                const response = await fetch('/interview_session/create', {
+                const response = await fetch(`${basePath}/interview_session/create`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -371,7 +375,7 @@
 
                 if (result.success) {
                     alert('✅ Tạo buổi phỏng vấn thành công!');
-                    window.location.href = '/interview_session';
+                    window.location.href = `${basePath}/interview_session`;
                 } else {
                     alert('❌ Lỗi: ' + result.error);
                 }
@@ -386,7 +390,7 @@
         // Load existing sessions
         async function loadExistingSessions() {
             try {
-                const response = await fetch('/interview_session/list');
+                const response = await fetch(`${basePath}/interview_session/list`)
                 const data = await response.json();
 
                 if (data.success) {
@@ -434,7 +438,7 @@
         }
 
         function selectSession(sessionId) {
-            window.location.href = `/interview_session/detail/${sessionId}`;
+            window.location.href = `${basePath}/interview_session/detail/${sessionId}`
         }
 
         // Utilities
@@ -482,7 +486,7 @@
                     <span>Quản lý buổi phỏng vấn</span>
                 </div>
                 <div class="header-actions">
-                    <a href="/" class="btn btn-secondary btn-sm">
+                    <a href="{{ base_path }}/" class="btn btn-secondary btn-sm">
                         <i class="fas fa-home"></i> Trang chủ
                     </a>
                 </div>
@@ -571,24 +575,34 @@
 
                         <!-- Step 2: Candidates -->
                         <div id="step2" class="step-content">
-                            <h3>Tải lên danh sách thí sinh</h3>
-                            <div id="fileUploadArea" class="file-upload-area">
-                                <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: #cbd5e0;"></i>
-                                <h4>Kéo thả file CSV hoặc click để chọn</h4>
-                                <p style="color: #718096;">Format: Tên,Lớp (mỗi dòng một thí sinh)</p>
-                                <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+                        <h3>Tải lên danh sách thí sinh</h3>
+                        <p class="description" style="color: #4a5568; margin-bottom: 25px;">
+                            Vui lòng chuẩn bị file **CSV** chứa đầy đủ thông tin của các thí sinh. Dữ liệu sẽ được sử dụng để lọc và tính toán điểm cuối cùng. Đảm bảo file tuân thủ đúng cấu trúc cột yêu cầu như mô tả bên dưới để hệ thống có thể đọc chính xác.
+                        </p>
+
+                        <div id="fileUploadArea" class="file-upload-area">
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: #cbd5e0;"></i>
+                            <h4>Kéo thả file CSV hoặc click để chọn</h4>
+                            <p style="color: #718096; font-weight: bold;">
+                                Định dạng bắt buộc: <span style="color: #e53e3e;">Tên,Lớp,Chuyên ngành,Điểm chuyên cần,Điểm 40%</span>
+                            </p>
+                            <div style="font-family: monospace; font-size: 12px; background-color: #f7fafc; padding: 5px; border-radius: 4px; margin-top: 10px;">
+                                Ví dụ: Nguyễn Văn An,QTKD1,Quản trị kinh doanh,8.9,6.7
                             </div>
-                            <div style="margin-top: 20px;">
-                                <div id="candidateCount" style="font-weight: 600; margin-bottom: 10px;">Chưa có thí sinh</div>
-                                <div id="candidateList" class="candidate-list"></div>
+
+                                    <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+                                </div>
+                                <div style="margin-top: 20px;">
+                                    <div id="candidateCount" style="font-weight: 600; margin-bottom: 10px;">Chưa có thí sinh</div>
+                                    <div id="candidateList" class="candidate-list"></div>
+                                </div>
                             </div>
-                        </div>
 
                         <!-- Step 3: Knowledge Base -->
                         <div id="step3" class="step-content">
                             <h3>Chọn Knowledge Base và Chủ đề</h3>
                             <div class="form-group">
-                                <label>Knowledge Base:</label>
+                                <label>Knowledge Base (Vector Stores):</label>
                                 <select id="vectorstoreSelect" class="form-control">
                                     <option value="">-- Đang tải... --</option>
                                 </select>
@@ -598,9 +612,9 @@
                                 <input type="text" id="topicInput" class="form-control" placeholder="VD: Kiểu dữ liệu trong Java">
                             </div>
                             <div class="form-group">
-                                <label>Outline (tùy chọn):</label>
+                                <label for="outlineInput">Outline (tùy chọn):</label>
                                 <input type="text" id="outlineInput" class="form-control" placeholder="VD: Primitive types, Reference types, String">
-                                <small>Ngăn cách bởi dấu phẩy</small>
+                                <small class="form-text text-muted">Nhập nội dung liên quan đến topic  (ngăn cách bởi dấu phẩy) . Hệ thống sẽ sử dụng chúng để tạo nhiều truy vấn (multiple query) cho RAG giúp **truy xuất kiến thức toàn diện hơn**.</small>
                             </div>
                         </div>
 

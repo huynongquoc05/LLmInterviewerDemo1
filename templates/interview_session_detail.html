@@ -4,35 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi tiết buổi phỏng vấn</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link href="{{ url_for('static', filename='prism.css') }}" rel="stylesheet" />
-    <script src="{{ url_for('static', filename='prism.js') }}"></script>
+    <link rel="stylesheet" href="{{ base_path }}{{ url_for('static', filename='styles.css') }}">
+<link rel="stylesheet" href="{{ base_path }}{{ url_for('static', filename='prism.css') }}">
+<script src="{{ base_path }}{{ url_for('static', filename='prism.js') }}"></script>
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        .detail-container { max-width: 1400px; margin: 0 auto; }
-        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .info-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; }
-        .info-box h3 { margin: 0 0 10px 0; font-size: 14px; opacity: 0.9; }
-        .info-box .value { font-size: 32px; font-weight: 700; }
-        .candidates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
-        .candidate-card { border: 2px solid #e2e8f0; border-radius: 8px; padding: 20px; cursor: pointer; transition: all 0.3s; position: relative; }
-        .candidate-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-2px); }
-        .candidate-card.pending { border-color: #e2e8f0; }
-        .candidate-card.in_progress { border-color: #ed8936; background: #fffaf0; }
-        .candidate-card.completed { border-color: #48bb78; background: #f0fff4; }
-        .status-badge { position: absolute; top: 10px; right: 10px; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }
-        .status-pending { background: #e2e8f0; color: #4a5568; }
-        .status-in_progress { background: #feebc8; color: #c05621; }
-        .status-completed { background: #c6f6d5; color: #22543d; }
-        .interview-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
-        .interview-modal.active { display: flex; align-items: center; justify-content: center; }
-        .modal-content { background: white; border-radius: 12px; max-width: 900px; width: 90%; max-height: 90vh; overflow-y: auto; }
-        .modal-header { padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-        .modal-body { padding: 20px; }
-        .progress-ring { width: 120px; height: 120px; }
-        .progress-ring circle { transition: stroke-dashoffset 0.3s; transform: rotate(-90deg); transform-origin: 50% 50%; }
-    </style>
+<!--    <style>-->
+<!--        .detail-container { max-width: 1400px; margin: 0 auto; }-->
+<!--        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }-->
+<!--        .info-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; }-->
+<!--        .info-box h3 { margin: 0 0 10px 0; font-size: 14px; opacity: 0.9; }-->
+<!--        .info-box .value { font-size: 32px; font-weight: 700; }-->
+<!--        .candidates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }-->
+<!--        .candidate-card { border: 2px solid #e2e8f0; border-radius: 8px; padding: 20px; cursor: pointer; transition: all 0.3s; position: relative; }-->
+<!--        .candidate-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-2px); }-->
+<!--        .candidate-card.pending { border-color: #e2e8f0; }-->
+<!--        .candidate-card.in_progress { border-color: #ed8936; background: #fffaf0; }-->
+<!--        .candidate-card.completed { border-color: #48bb78; background: #f0fff4; }-->
+<!--        .status-badge { position: absolute; top: 10px; right: 10px; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }-->
+<!--        .status-pending { background: #e2e8f0; color: #4a5568; }-->
+<!--        .status-in_progress { background: #feebc8; color: #c05621; }-->
+<!--        .status-completed { background: #c6f6d5; color: #22543d; }-->
+<!--        .interview-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }-->
+<!--        .interview-modal.active { display: flex; align-items: center; justify-content: center; }-->
+<!--        .modal-content { background: white; border-radius: 12px; max-width: 900px; width: 90%; max-height: 90vh; overflow-y: auto; }-->
+<!--        .modal-header { padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }-->
+<!--        .modal-body { padding: 20px; }-->
+<!--        .progress-ring { width: 120px; height: 120px; }-->
+<!--        .progress-ring circle { transition: stroke-dashoffset 0.3s; transform: rotate(-90deg); transform-origin: 50% 50%; }-->
+<!--    </style>-->
     <script>
         const SESSION_ID = "{{ session_id }}";
         let sessionData = null;
@@ -40,12 +41,14 @@
         let currentQuestion = "";
         let currentAudio = null;
         let autoPlayEnabled = true;
+        const basePath = window.location.pathname.startsWith('/iview1') ? '/iview1' : '';
 
         async function loadSessionDetail() {
             try {
                 showLoading(true, 'Đang tải thông tin...');
 
-                const response = await fetch(`/interview_session/get/${SESSION_ID}`);
+                const response = await fetch(`${basePath}/interview_session/get/${SESSION_ID}`);
+
                 const data = await response.json();
 
                 if (data.success) {
@@ -137,7 +140,8 @@
 
             try {
                 // Update status to in_progress
-                await fetch('/interview_session/update_candidate_status', {
+                await fetch(`${basePath}/interview_session/update_candidate_status`, {
+
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -148,7 +152,8 @@
                 });
 
                 // Start interview
-                const response = await fetch('/interview_session/start_candidate', {
+                const response = await fetch(`${basePath}/interview_session/start_candidate`, {
+
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -206,7 +211,8 @@
             try {
                 const fullName = `${currentCandidate.name},${currentCandidate.class}`;
 
-                const response = await fetch('/interviewing/answer', {
+                const response = await fetch(`${basePath}/interviewing/answer`, {
+
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -230,7 +236,8 @@
                     document.getElementById('finishBtn').style.display = 'inline-block';
 
                     // Update status to completed
-                    await fetch('/interview_session/update_candidate_status', {
+                    await fetch(`${basePath}/interview_session/update_candidate_status`, {
+
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
@@ -465,14 +472,16 @@
         }
 
         async function exportResults() {
-            window.location.href = `/interview_session/export/${SESSION_ID}`;
+            window.location.href = `${basePath}/interview_session/export/${SESSION_ID}`;
+
         }
 
         async function deleteSession() {
             if (!confirm('Bạn có chắc muốn xóa buổi phỏng vấn này?')) return;
 
             try {
-                const response = await fetch(`/interview_session/delete/${SESSION_ID}`, {
+                const response = await fetch(`${basePath}/interview_session/delete/${SESSION_ID}`, {
+
                     method: 'DELETE'
                 });
 
@@ -520,7 +529,7 @@
                     <span id="sessionName">Chi tiết buổi phỏng vấn</span>
                 </div>
                 <div class="header-actions">
-                    <a href="/interview_session" class="btn btn-secondary btn-sm">
+                    <a href="{{ base_path }}/interview_session" class="btn btn-secondary btn-sm">
                         <i class="fas fa-arrow-left"></i> Quay lại
                     </a>
                     <button class="btn btn-success btn-sm" onclick="exportResults()">
@@ -580,7 +589,7 @@
             </div>
 
             <!-- Config and Outline -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+            <div class="grid-two-columns">
                 <div class="card">
                     <div class="card-header">
                         <h3><i class="fas fa-cog"></i> Cấu hình</h3>

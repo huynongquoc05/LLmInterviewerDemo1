@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vector Store Management</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ base_path }}{{ url_for('static', filename='styles.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -157,7 +157,7 @@
     </style>
     <script>
         let currentFile = null;
-
+        const basePath = window.location.pathname.startsWith('/iview1') ? '/iview1' : '';
         function switchTab(tabName) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -236,7 +236,7 @@
             document.getElementById('uploadBtn').disabled = true;
 
             try {
-                const response = await fetch('/embedding/upload', {
+                const response = await fetch(`${basePath}/embedding/upload`, {
                     method: 'POST',
                     body: formData
                 });
@@ -301,7 +301,7 @@
 
         async function loadVectorstores() {
             try {
-                const response = await fetch('/embedding/list');
+                const response = await fetch(`${basePath}/embedding/list`)
                 const data = await response.json();
 
                 const listContainer = document.getElementById('vectorstoreList');
@@ -312,29 +312,37 @@
                 }
 
                 listContainer.innerHTML = data.vectorstores.map(vs => `
-                    <div class="vectorstore-item">
-                        <div class="vectorstore-info">
-                            <h4><i class="fas fa-database"></i> ${vs.pdf_file}</h4>
-                            <div class="vectorstore-meta">
-                                <span><i class="fas fa-cube"></i> ${vs.model_info.name}</span>
-                                <span><i class="fas fa-layer-group"></i> ${vs.num_chunks} chunks</span>
-                                <span><i class="fas fa-file"></i> ${vs.file_size_mb.toFixed(2)} MB</span>
-                                <span><i class="fas fa-clock"></i> ${new Date(vs.created_at).toLocaleString('vi-VN')}</span>
-                            </div>
-                        </div>
-                        <div class="vectorstore-actions">
-                            <span class="badge badge-success">${vs.status}</span>
-                            <button class="btn btn-secondary btn-sm" onclick="deleteVectorstore('${vs._id}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                <div class="vectorstore-item">
+                    <div class="vectorstore-info">
+                        <h4><i class="fas fa-database"></i> ${vs.pdf_file}</h4>
+                        <div class="vectorstore-meta">
+                            <span><i class="fas fa-cube"></i> ${vs.model_info.name}</span>
+                            <span><i class="fas fa-layer-group"></i> ${vs.num_chunks} chunks</span>
+                            <span><i class="fas fa-file"></i> ${vs.file_size_mb.toFixed(2)} MB</span>
+                            <span><i class="fas fa-clock"></i> ${new Date(vs.created_at).toLocaleString('vi-VN')}</span>
                         </div>
                     </div>
+                    <div class="vectorstore-actions">
+                        <span class="badge badge-success">${vs.status}</span>
+                        <button class="btn btn-info btn-sm" onclick="viewVectorstoreDetail('${vs._id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="deleteVectorstore('${vs._id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
                 `).join('');
+
 
             } catch (error) {
                 console.error('Load error:', error);
             }
         }
+        function viewVectorstoreDetail(id) {
+            window.location.href = `${basePath}/embedding/detail/${id}`;
+        }
+
 
         async function deleteVectorstore(id) {
             if (!confirm('Bạn có chắc muốn xóa vectorstore này?')) {
@@ -342,7 +350,7 @@
             }
 
             try {
-                const response = await fetch(`/embedding/delete/${id}`, {
+                const response = await fetch(`${basePath}/embedding/delete/${id}`, {
                     method: 'DELETE'
                 });
 
@@ -374,7 +382,7 @@
                     <i class="fas fa-database"></i>
                     <span>Vector Store Management</span>
                 </div>
-                <a href="/" class="btn btn-secondary">
+                <a href="{{ base_path }}/" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Quay lại
                 </a>
             </div>

@@ -57,6 +57,13 @@ MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
+# Thư mục lưu trữ audio tạm thời
+AUDIO_FOLDER = "temp_audio"
+if not os.path.exists(AUDIO_FOLDER):
+    os.makedirs(AUDIO_FOLDER)
+
+# Dictionary để lưu trữ thông tin audio files
+audio_cache = {}
 
 
 def allowed_file(filename):
@@ -68,20 +75,42 @@ client = MongoClient("mongodb://localhost:27017/")
 db = client["interviewer_ai"]
 collection = db["interview_results"]
 
-# Khởi tạo Flask + Interviewer
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/iview1/static', static_folder='static')
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
 
-# Thư mục lưu trữ audio tạm thời
-AUDIO_FOLDER = "temp_audio"
-if not os.path.exists(AUDIO_FOLDER):
-    os.makedirs(AUDIO_FOLDER)
+# 🧠 Hàm xác định base_path tự động (khi render template)
+@app.context_processor
+def inject_base_path():
+    """
+    Nếu đang chạy trên domain ánh xạ fit.neu.edu.vn thì thêm prefix /iview1,
+    ngược lại (chạy bằng IP hoặc localhost) thì để trống.
+    """
+    if 'fit.neu.edu.vn' in request.host:
+        base_path = '/iview1'
+    else:
+        base_path = ''
+    return dict(base_path=base_path)
 
-# Dictionary để lưu trữ thông tin audio files
-audio_cache = {}
+@app.route("/")
+def index():
+    """Trang chủ - có thể tạo landing page""" #
+    #Cleanup old audio files
+    clean_old_audio_files()
+    return render_template("home.html") # Tạo trang chủ riêng nếu cần
 
+
+
+def get_base_path():
+    """
+    Tự động trả về prefix phù hợp:
+    - Trống khi chạy local/IP (http://101.96.66.223:8005)
+    - '/iview1' khi chạy trên fit.neu.edu.vn
+    """
+    if 'fit.neu.edu.vn' in request.host:
+        return '/iview1'
+    return ''
 
 def clean_old_audio_files():
     """Xóa các file audio cũ hơn 1 giờ"""
@@ -134,42 +163,65 @@ def remove_code_blocks(text: str) -> str:
 
     return clean_text.strip()
 
+
+
+
 def create_audio_from_text(text, lang='vi'):
     """
-    Tạo file audio từ text bằng gTTS
+    Tạo file audio từ text.
+    Ưu tiên dùng ElevenLabs (tự nhiên hơn), fallback sang gTTS nếu lỗi hoặc hết hạn mức.
 
     Args:
         text (str): Văn bản cần chuyển thành giọng nói
         lang (str): Ngôn ngữ ('vi' cho tiếng Việt, 'en' cho tiếng Anh)
 
     Returns:
-        str: Tên file audio được tạo
+        str | None: ID của audio (uuid) nếu thành công, None nếu thất bại
     """
+    from extension import generate_voice_ElevenLab  # Hàm tiện ích bạn đã có
     try:
+        # Làm sạch text
+        clean_text = remove_code_blocks(text) if 'remove_code_blocks' in globals() else text
+        clean_text = clean_text.replace("🤖", "").strip()
+        if not clean_text:
+            print("⚠️ Text trống, bỏ qua tạo audio.")
+            return None
+
         # Tạo tên file unique
         audio_id = str(uuid.uuid4())
         audio_filename = f"question_{audio_id}.mp3"
         audio_path = os.path.join(AUDIO_FOLDER, audio_filename)
 
-        # Xử lý text để tối ưu cho TTS
-        # Loại bỏ các ký tự đặc biệt có thể gây lỗi
-        # Làm sạch text
-        clean_text = remove_code_blocks(text)
-        clean_text = clean_text.replace("🤖", "").strip()
+        # ===== ƯU TIÊN ELEVENLABS =====
+        print("🧠 Đang tạo voice bằng ElevenLabs...")
+        eleven_audio_path = generate_voice_ElevenLab(clean_text, output_path=audio_path)
 
-        # Tạo audio bằng gTTS
+        if eleven_audio_path:
+            # Lưu cache
+            audio_cache[audio_id] = {
+                'filename': audio_filename,
+                'path': eleven_audio_path,
+                'created_at': datetime.now(),
+                'text': clean_text,
+                'source': 'elevenlabs'
+            }
+            print(f"✅ Đã tạo audio bằng ElevenLabs: {audio_filename}")
+            return audio_id
+
+        # ===== FALLBACK: GOOGLE TTS =====
+        print("⚠️ ElevenLabs lỗi hoặc hết hạn mức, fallback sang Google TTS...")
         tts = gTTS(text=clean_text, lang=lang, slow=False)
         tts.save(audio_path)
 
-        # Lưu thông tin vào cache
         audio_cache[audio_id] = {
             'filename': audio_filename,
             'path': audio_path,
             'created_at': datetime.now(),
-            'text': clean_text
+            'text': clean_text,
+            'source': 'gtts'
         }
 
-        print(f"✅ Đã tạo audio: {audio_filename}")
+        print(f"✅ Đã tạo audio bằng Google TTS: {audio_filename}")
         return audio_id
 
     except Exception as e:
@@ -191,12 +243,7 @@ def detect_language(text):
         return 'en'
 
 
-@app.route("/")
-def index():
-    """Trang chủ - có thể tạo landing page"""
-    # Cleanup old audio files
-    clean_old_audio_files()
-    return render_template("home.html")  # Tạo trang chủ riêng nếu cần
+
 
 @app.route("/interviewing")
 def interviewing():
@@ -253,7 +300,8 @@ def answer():
             audio_id = create_audio_from_text(question_text, lang)
             if audio_id:
                 result["audio_id"] = audio_id
-                result["audio_url"] = f"/audio/{audio_id}"
+                result["audio_url"] = f"{get_base_path()}/audio/{audio_id}"
+
 
     # Lưu kết quả vào MongoDB nếu phỏng vấn kết thúc
     if result.get("finished"):
@@ -317,7 +365,8 @@ def test_tts():
         return jsonify({
             "success": True,
             "audio_id": audio_id,
-            "audio_url": f"/audio/{audio_id}",
+            "audio_url": f"{get_base_path()}/audio/{audio_id}"
+,
             "text": text,
             "language": lang
         })
@@ -533,6 +582,29 @@ def get_vectorstore_info(vectorstore_id):
             "success": False,
             "error": str(e)
         }), 500
+
+@app.route("/embedding/detail/<vectorstore_id>")
+def embedding_detail_page(vectorstore_id):
+    """Trang HTML chi tiết vectorstore"""
+    return render_template("embedding_detail.html", vectorstore_id=vectorstore_id)
+
+
+@app.route("/embedding/chunks/<vectorstore_id>", methods=["GET"])
+def get_vectorstore_chunks(vectorstore_id):
+    """Trả danh sách các chunks (nội dung tách ra từ tài liệu gốc)"""
+    try:
+        from extension import get_vectorstore_chunks
+        chunks = get_vectorstore_chunks(vectorstore_id, mongo_uri="mongodb://localhost:27017/")
+        return jsonify({"success": True, "chunks": chunks})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/uploads/<path:filename>')
+def serve_uploaded_file(filename):
+    from flask import send_from_directory
+
+    """Cho phép truy cập file PDF gốc"""
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
 # ================================
@@ -786,7 +858,8 @@ def start_candidate_interview():
         result.update({
             "success": True,
             "audio_id": audio_id,
-            "audio_url": f"/audio/{audio_id}" if audio_id else None,
+            "audio_url": f"{get_base_path()}/audio/{audio_id}"
+ if audio_id else None,
             "phase": result.get("phase", "warmup")  # 👈 Thêm dòng này
         })
 
